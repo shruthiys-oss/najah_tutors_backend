@@ -1,0 +1,55 @@
+{
+  "name": "najah_tutors_backend",
+  "version": "1.0.0",
+  "description": "Najah Tutors Backend - Node.js Express API with Redis integration",
+  "main": "index.js",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "build": "echo \"No build step configured\"",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint .",
+    "test:coverage": "jest --coverage",
+    "docker:build": "docker build -t najah_tutors_backend .",
+    "docker:run": "docker run -p 3000:3000 -d najah_tutors_backend",
+    "docker:run-dev": "docker run -p 3000:3000 -it --rm -v $(pwd):/app najah_tutors_backend",
+    "docker:compose:up": "docker-compose up -d",
+    "docker:compose:down": "docker-compose down",
+    "docker:compose:logs": "docker-compose logs -f"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "redis",
+    "mongoose",
+    "tutoring",
+    "education"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "connect-redis": "^7.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.4.1",
+    "express-session": "^1.18.1",
+    "mongoose": "^8.7.3",
+    "rate-limit-redis": "^4.2.0",
+    "redis": "^4.7.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.0.4",
+    "eslint": "^9.30.1",
+    "eslint-config-prettier": "^10.1.5",
+    "jest": "^30.0.4",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  }
+}

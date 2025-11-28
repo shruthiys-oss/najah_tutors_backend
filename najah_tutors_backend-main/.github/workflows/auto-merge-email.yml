@@ -1,0 +1,71 @@
+name: Auto Merge staging → prod-staging with Email
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge staging into prod-staging
+        id: merge
+        run: |
+          git checkout prod-staging
+          if git merge origin/staging --no-edit; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=conflict" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Generate Merge Report
+        run: |
+          echo "<html><body>" > merge-report.html
+          echo "<h2>🔄 Merge Report</h2>" >> merge-report.html
+          echo "<p><b>Status:</b> ${{ steps.merge.outputs.status }}</p>" >> merge-report.html
+          echo "<p><b>Branch:</b> staging → prod-staging</p>" >> merge-report.html
+          echo "<p><b>Repository:</b> ${{ github.repository }}</p>" >> merge-report.html
+          echo "<p><b>Commit SHA:</b> ${{ github.sha }}</p>" >> merge-report.html
+          echo "<p><b>Workflow Run:</b> <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>View Run</a></p>" >> merge-report.html
+          echo "<pre>" >> merge-report.html
+          git log -5 --oneline | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' >> merge-report.html
+          echo "</pre></body></html>" >> merge-report.html
+
+      - name: Push to prod-staging (only if no conflict)
+        if: steps.merge.outputs.status == 'success'
+        run: git push origin prod-staging
+
+      - name: Send Email Notification
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: >-
+            ${{ steps.merge.outputs.status == 'success' && '✅ SUCCESS' || '⚠️ CONFLICT' }}
+            Auto-Merge: staging → prod-staging
+          to: |
+            techblueera@gmail.com
+            bpuneet2003@gmail.com
+          from: ${{ secrets.EMAIL_USERNAME }}
+          content_type: text/html
+          body: |
+            <p>Hi Team,</p>
+            <p>The auto-merge workflow has completed with status: <b>${{ steps.merge.outputs.status }}</b>.</p>
+            <p>See the attached report for more details.</p>
+          attachments: merge-report.html
